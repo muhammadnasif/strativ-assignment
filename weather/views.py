@@ -5,21 +5,11 @@ import time
 import aiohttp
 import asyncio
 from django.conf import settings
-# import ujson
 import requests
 from .open_meteo_parser import avg_temp_parser
-import openmeteo_requests
-import requests_cache
-import pandas as pd
-from retry_requests import retry
 
-
-# Setup the Open-Meteo API client with cache and retry on error
-cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-openmeteo = openmeteo_requests.Client(session = retry_session)
-
-cities = []
+GET_DISTRICT_INFO_URL = "https://raw.githubusercontent.com/strativ-dev/technical-screening-test/main/bd-districts.json"
+districts = [] 
 
 def custom_response(data = None, message = "Success", status = 200, start_time = None):
     return JsonResponse({
@@ -30,26 +20,23 @@ def custom_response(data = None, message = "Success", status = 200, start_time =
     }, status = status, safe=True)
 
 
-async def get_all_district_information(request):
-    url = "https://raw.githubusercontent.com/strativ-dev/technical-screening-test/main/bd-districts.json"
-    async with aiohttp.ClientSession() as session:
-        task_fetch_data = session.get(url)
-        response = await asyncio.wait_for(task_fetch_data, timeout=settings.REQUEST_TIMEOUT_THRESHOLD)
+def get_all_district_information():
+    global districts
+    districts = requests.get(GET_DISTRICT_INFO_URL).json()["districts"]
+    print("Districts loaded successfully")
 
 
 async def index(request):
     start_time = time.time()  # Record the start time
-    response = {}
-    url = "https://raw.githubusercontent.com/strativ-dev/technical-screening-test/main/bd-districts.json"
     try:
-        response = requests.get(url).json()
         ids, lat, long, names = [], [], [], []
 
-        for district in response["districts"]:
-            ids.append(district["id"])
-            lat.append(district["lat"])
-            long.append(district["long"])   
-            names.append(district["name"])
+        global districts
+        
+        ids = [district["id"] for district in districts]
+        lat = [district["lat"] for district in districts]
+        long = [district["long"] for district in districts]
+        names = [district["name"] for district in districts]
 
         avg_temps = avg_temp_parser(ids, lat, long, names)
         sorted_avg_temps = sorted(avg_temps, key=lambda x: x[1])
