@@ -11,7 +11,7 @@ cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
 retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
 
-def open_meteo_parser(lat : list, long : list) -> dict:
+def avg_temp_parser(ids : list, lat : list, long : list, names : list) -> dict:
     """
     Fetches average temperature for a specific location based on latitude list and longitude list.
 
@@ -31,6 +31,7 @@ def open_meteo_parser(lat : list, long : list) -> dict:
 
     avg_temps = []
     # Process first location. Add a for-loop for multiple locations or weather models
+    id_ctr = 0
     for response in responses:
         # Process hourly data. The order of variables needs to be the same as requested.
         hourly = response.Hourly()
@@ -46,9 +47,6 @@ def open_meteo_parser(lat : list, long : list) -> dict:
 
         hourly_dataframe = pd.DataFrame(data = hourly_data)
         avg_temp = sum(hourly_dataframe["temperature_2m"][13 + (24*i)] for i in range(7))/7
-        avg_temps.append(avg_temp)
-
-    return {
-        "current_location_avg_temp": avg_temps[0],
-        "next_location_avg_temp": avg_temps[1]
-    }
+        avg_temps.append((ids[id_ctr], avg_temp, names[id_ctr]))
+        id_ctr += 1
+    return avg_temps
