@@ -1,38 +1,17 @@
 from django.shortcuts import render
-from django.http import JsonResponse
 from http import HTTPStatus
 import time
 import json
 import asyncio
 from django.conf import settings
-import requests
 from .open_meteo_parser import avg_temp_parser, check_temperature_at_2pm
 from django.views.decorators.csrf import csrf_exempt
-
-
-GET_DISTRICT_INFO_URL = "https://raw.githubusercontent.com/strativ-dev/technical-screening-test/main/bd-districts.json"
-districts = [] 
-
-def get_all_district_information():
-    global districts
-    districts = requests.get(GET_DISTRICT_INFO_URL).json()["districts"]
-    print("Districts loaded successfully")
-
-
-def custom_response(data = None, message = "Success", status = 200, start_time = None):
-    return JsonResponse({
-        "success" : True if status == 200 else False,
-        "data": data,
-        "message": message,
-        "elapsed_time": None if start_time is None else f"{(time.time() - start_time)*1000:.2f} ms"
-    }, status = status, safe=True)
+from .utils import custom_response, get_district_by_name, districts
 
 
 async def calculate_coolest_ten():
 
     ids, lat, long, names = [], [], [], []
-
-    global districts
 
     ids = [district["id"] for district in districts]
     lat = [district["lat"] for district in districts]
@@ -55,7 +34,7 @@ async def calculate_coolest_ten():
     return serialized_data
 
 
-async def get_ten_coolest_districts(request):
+async def ten_coolest_districts(request):
     start_time = time.time()  # Record the start time
     try:
         data = await asyncio.wait_for(calculate_coolest_ten(), timeout=settings.REQUEST_TIMEOUT_THRESHOLD)
@@ -64,14 +43,6 @@ async def get_ten_coolest_districts(request):
         return custom_response(data = None, message=HTTPStatus.REQUEST_TIMEOUT.description, status=HTTPStatus.REQUEST_TIMEOUT, start_time=start_time)        
     except Exception as e:
         return custom_response(data = None, message = str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR, start_time=start_time)
-
-
-def get_district_by_name(name):
-    global districts
-    for district in districts:
-        if district["name"] == name:
-            return district
-    return None
 
 
 async def calculate_travel_suggestion(request):
