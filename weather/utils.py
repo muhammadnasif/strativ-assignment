@@ -11,6 +11,9 @@ def get_all_district_information():
     global districts
     districts = requests.get(GET_DISTRICT_INFO_URL).json()["districts"]
 
+def get_districts():
+    global districts
+    return districts
 
 def custom_response(data = None, message = "Success", status = 200, start_time = None):
     return JsonResponse({

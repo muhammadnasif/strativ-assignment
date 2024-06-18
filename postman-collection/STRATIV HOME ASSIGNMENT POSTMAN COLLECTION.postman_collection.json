@@ -1,0 +1,44 @@
+{
+	"info": {
+		"_postman_id": "31bbb756-73f6-4f7a-b192-8011ab74d1f7",
+		"name": "STRATIV HOME ASSIGNMENT POSTMAN COLLECTION",
+		"description": "The collection consists of two requests\n\n- Get top 10 coolest districts\n    \n- Suggestion for traavelling given current location and destination for a given date",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "24868117"
+	},
+	"item": [
+		{
+			"name": "Top 10 Coolest District",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{base-url}}/weather/top-coolest-districts/"
+			},
+			"response": []
+		},
+		{
+			"name": "Travelling Suggestion",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"from\" : \"Dhaka\",\r\n    \"to\" : \"Rajshahi\",\r\n    \"at\" : \"2024-06-21\" // YYYY-MM-DD\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/weather/travel-suggestion/"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base-url",
+			"value": "http://127.0.0.1:8000"
+		}
+	]
+}
