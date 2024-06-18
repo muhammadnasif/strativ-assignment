@@ -26,10 +26,7 @@ def custom_response(data = None, message = "Success", status = 200, start_time =
     }, status = status, safe=True)
 
 
-# ---------------- USE AWAIT FOR TO HANDLE TIMEOUT ----------------
 async def calculate_coolest_ten():
-
-    time.sleep(2)  # Simulate a blocking operation
 
     ids, lat, long, names = [], [], [], []
 
@@ -55,13 +52,13 @@ async def calculate_coolest_ten():
     
     return serialized_data
 
-async def index(request):
+
+async def get_ten_coolest_districts(request):
     start_time = time.time()  # Record the start time
     try:
-        data = await asyncio.wait_for(calculate_coolest_ten(), timeout=0.001)
+        data = await asyncio.wait_for(calculate_coolest_ten(), timeout=settings.REQUEST_TIMEOUT_THRESHOLD)
         return custom_response(data = data, message = HTTPStatus.OK.description, status=HTTPStatus.OK, start_time=start_time)
-
-    except TimeoutError:
+    except asyncio.TimeoutError:
         return custom_response(data = None, message=HTTPStatus.REQUEST_TIMEOUT.description, status=HTTPStatus.REQUEST_TIMEOUT, start_time=start_time)        
     except Exception as e:
         return custom_response(data = None, message = str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR, start_time=start_time)
