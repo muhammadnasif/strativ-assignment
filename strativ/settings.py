@@ -125,4 +125,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Request Timeout Threshold
-REQUEST_TIMEOUT_THRESHOLD = 5     # 500 ms threshold
+REQUEST_TIMEOUT_THRESHOLD = 0.05     # 500 ms threshold
