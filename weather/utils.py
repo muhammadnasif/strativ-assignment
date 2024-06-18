@@ -29,5 +29,6 @@ def get_district_by_name(name):
     for district in districts:
         if district["name"] == name:
             return district
-    return None
+
+    raise ValueError(f"District with name '{name}' not found")
 
